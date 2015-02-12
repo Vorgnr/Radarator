@@ -6,8 +6,6 @@ var Plane = function(){
         return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
     }
     this.id = createGuid();
-    var minAngle = 0.1;
-    var maxAngle = 1;
 
     var plusOrMinus = function(){
         return [-1,1][Math.random()*2|0];
@@ -26,6 +24,8 @@ var Plane = function(){
     }
 
     this.isOutOfBound = false;
+    var minAngle = 0.1;
+    var maxAngle = 1;
     this.vx = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
     this.vy = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
 }
@@ -53,8 +53,6 @@ var planesCount = 35;
 var planes = [];
 
 var startAngle = Math.PI;
-var lineX = 500;
-var lineY = 0;
 
 var createPlane = function(){
     while(planes.length < planesCount){
@@ -92,10 +90,11 @@ var drawRadar = function(){
 }
 
 var drawLine = function(){
-    context.moveTo(500, 500);
+    var center = 500;
     context.lineWidth = 8;
     startAngle += 0.01;
-    context.lineTo(500 + 500 * Math.cos(startAngle), 500 + 500 * Math.sin(startAngle));
+    context.moveTo(center, center);
+    context.lineTo(center + center * Math.cos(startAngle), center + center * Math.sin(startAngle));
     context.stroke();
 }
 
@@ -117,7 +116,6 @@ var draw = function() {
     context.clearRect(0, 0, canvasSize, canvasSize);
     drawRadar();
     drawPlanes();
-    linex = Math.cos()
     drawLine();
 }
  
