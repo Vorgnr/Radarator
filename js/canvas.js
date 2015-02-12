@@ -76,8 +76,8 @@ function getRandomBetween(min, max) {
 
 var drawRadar = function(){
     context.lineWidth = 5;
-    context.strokeStyle = '#003300';
-    context.fillStyle = "rgba(0, 228, 123, 0.9)";
+    context.strokeStyle = '#000';
+    context.fillStyle = "rgba(52, 152, 219, 0.8)";
     for (var i = 5; i > 0; i--) {
         drawCircle(circleInitialPosition, circleInitialPosition, i * 100);
     };
@@ -99,7 +99,7 @@ var drawLine = function(){
 }
 
 var drawPlanes = function(){
-    context.fillStyle = "rgb(200,0,0)";
+    context.fillStyle = "rgb(200, 0, 0)";
     createPlane();
     planes.forEach(function(p, i){
         if(!p.isOutOfBound)
