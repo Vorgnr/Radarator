@@ -15,6 +15,10 @@ var Plane = function(){
         return [min, max][Math.random()*2|0];
     };
 
+    var getRandomBetween = function(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
     if(~plusOrMinus()){
         this.x = getRandomBetween(min, max);
         this.y = getStartPosition();
@@ -58,27 +62,27 @@ var createPlane = function(){
     while(planes.length < planesCount){
         var p = new Plane();
         planes.push(p);
-        var planeItem = document.createElement("li");
-        var id = document.createElement("b");
-        id.appendChild(document.createTextNode(p.id));
-        var span = document.createElement("span");
-        span.appendChild(document.createTextNode(p.x + ", " + p.y));
-        planeItem.appendChild(id);
-        planeItem.appendChild(span);
-        planeItem.setAttribute("id", p.id);
-        planeList.appendChild(planeItem);
+        appendPlane(p);
     };
 }
 
-function getRandomBetween(min, max) {
-    return Math.random() * (max - min) + min;
+var appendPlane = function(p){
+    var planeItem = document.createElement("li");
+    var id = document.createElement("b");
+    id.appendChild(document.createTextNode(p.id));
+    var span = document.createElement("span");
+    span.appendChild(document.createTextNode(p.x + ", " + p.y));
+    planeItem.appendChild(id);
+    planeItem.appendChild(span);
+    planeItem.setAttribute("id", p.id);
+    planeList.appendChild(planeItem);
 }
 
 var drawRadar = function(){
     context.lineWidth = 5;
     context.strokeStyle = '#000';
     context.fillStyle = "rgba(52, 152, 219, 0.8)";
-    for (var i = 5; i > 0; i--) {
+    for (var i = 5; i >= 0; i--) {
         drawCircle(circleInitialPosition, circleInitialPosition, i * 100);
     };
 
