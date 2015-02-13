@@ -1,25 +1,25 @@
-var Plane = function(){
-    var createGuid = function(){
-        var S4 = function(){
-            return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+var Plane = function() {
+    var createGuid = function() {
+        var S4 = function() {
+            return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
         }
         return S4().toLowerCase();
     }
     this.id = createGuid();
 
-    var plusOrMinus = function(){
-        return [-1,1][Math.random()*2|0];
+    var plusOrMinus = function() {
+        return [-1, 1][Math.random() * 2 | 0];
     };
 
-    var getStartPosition = function(){
-        return [min, max][Math.random()*2|0];
+    var getStartPosition = function() {
+        return [min, max][Math.random() * 2 | 0];
     };
 
     var getRandomBetween = function(min, max) {
         return Math.random() * (max - min) + min;
     }
 
-    if(~plusOrMinus()){
+    if (~plusOrMinus()) {
         this.x = getRandomBetween(min, max);
         this.y = getStartPosition();
     } else {
@@ -35,7 +35,7 @@ var Plane = function(){
 }
 
 Plane.prototype.draw = function() {
-    if(this.x >= min && this.x <= max && this.y >= min && this.y <= max){
+    if (this.x >= min && this.x <= max && this.y >= min && this.y <= max) {
         this.x += this.vx;
         this.y += this.vy;
         context.fillRect(this.x, this.y, 10, 10);
@@ -58,18 +58,22 @@ var circleInitialPosition = 500;
 var planesCount = 15;
 var planes = [];
 var selectedPlanes = [];
-
 var startAngle = Math.PI;
 
-var createPlane = function(){
-    while(planes.length < planesCount){
+var radarColor = "rgba(52, 152, 219, 0.8)";
+var selectedPlaneColor = "rgb(50, 0, 0)";
+var planeColor = "rgb(200, 0, 0)";
+var selectorColor = planeColor;
+
+var createPlane = function() {
+    while (planes.length < planesCount) {
         var p = new Plane();
         planes.push(p);
         appendPlane(planeList, p);
     };
 }
 
-var appendPlane = function(l, p){
+var appendPlane = function(l, p) {
     var planeItem = document.createElement("li");
     var id = document.createElement("b");
     id.appendChild(document.createTextNode(p.id));
@@ -81,10 +85,10 @@ var appendPlane = function(l, p){
     l.appendChild(planeItem);
 }
 
-var drawRadar = function(){
+var drawRadar = function() {
     context.lineWidth = 5;
     context.strokeStyle = '#000';
-    context.fillStyle = "rgba(52, 152, 219, 0.8)";
+    context.fillStyle = radarColor;
     for (var i = 5; i >= 0; i--) {
         drawCircle(circleInitialPosition, circleInitialPosition, i * 100);
     };
@@ -96,7 +100,7 @@ var drawRadar = function(){
     context.stroke();
 }
 
-var drawLine = function(){
+var drawLine = function() {
     var center = circleInitialPosition;
     context.lineWidth = 8;
     startAngle += 0.01;
@@ -105,21 +109,20 @@ var drawLine = function(){
     context.stroke();
 }
 
-var drawPlanes = function(){
+var drawPlanes = function() {
     createPlane();
-    planes.forEach(function(p, i){
-        if(!p.isOutOfBound) {
-            context.fillStyle = p.isSelected ? "rgb(50, 0, 0)" : "rgb(200, 0, 0)";
+    planes.forEach(function(p, i) {
+        if (!p.isOutOfBound) {
+            context.fillStyle = p.isSelected ? selectedPlaneColor : planeColor;
             p.draw();
-        }
-        else {
+        } else {
             var planeItem = document.getElementById(p.id);
             planeList.removeChild(planeItem);
             planes.splice(i, 1);
         }
     });
 }
- 
+
 var draw = function() {
     context.clearRect(0, 0, canvasSize, canvasSize);
     drawRadar();
@@ -127,10 +130,10 @@ var draw = function() {
     drawLine();
     drawSelector();
 }
- 
-var drawCircle = function(x, y, rayon){
+
+var drawCircle = function(x, y, rayon) {
     context.beginPath();
-    context.arc(x, y, rayon, 0, Math.PI*2);
+    context.arc(x, y, rayon, 0, Math.PI * 2);
     context.fill();
     context.closePath();
     context.stroke();
@@ -148,8 +151,8 @@ function getMousePos(canvas, evt) {
     };
 }
 
-function getSelectedPlanes(){
-    return planes.filter(function(p){
+function getSelectedPlanes() {
+    return planes.filter(function(p) {
         return p.isSelected;
     })
 }
@@ -158,43 +161,46 @@ var initialSelectorPosition = null;
 var currentSelectorPosition = null;
 
 canvas.addEventListener('mousemove', function(e) {
-  var mousePos = getMousePos(canvas, e);
-  var message = 'X: ' + Math.round(mousePos.x) + ' Y: ' + Math.round(mousePos.y);
-  writeMessage(message);
+    var mousePos = getMousePos(canvas, e);
+    var message = 'X: ' + Math.round(mousePos.x) + ' Y: ' + Math.round(mousePos.y);
+    writeMessage(message);
 }, false);
 
-canvas.addEventListener('mousedown', function(e){
+canvas.addEventListener('mousedown', function(e) {
     initialSelectorPosition = getMousePos(canvas, e);
     currentSelectorPosition = initialSelectorPosition;
     document.addEventListener('mousemove', setSelector);
     document.addEventListener('mouseup', selectPlane);
 });
 
-function selectPlane(){
+function selectPlane() {
     document.removeEventListener('mousemove', setSelector);
     document.removeEventListener('mouseup', selectPlane);
 
-    planes.forEach(function(p, i){
-        p.isSelected = isPointInRect(initialSelectorPosition, currentSelectorPosition, { x: p.x, y: p.y});
+    planes.forEach(function(p, i) {
+        p.isSelected = isPointInRect(initialSelectorPosition, currentSelectorPosition, {
+            x: p.x,
+            y: p.y
+        });
     });
 
     selectedPlanes = getSelectedPlanes();
     clearSelector();
 }
 
-function clearSelector(){
+function clearSelector() {
     initialSelectorPosition = null;
     currentSelectorPosition = null;
 }
 
-function setSelector(e){
+function setSelector(e) {
     currentSelectorPosition = getMousePos(canvas, e);
 }
 
-function drawSelector(){
-    if(initialSelectorPosition && currentSelectorPosition){
-        context.globalAlpha=0.5;
-        context.fillStyle = "rgb(200, 0, 0)";
+function drawSelector() {
+    if (initialSelectorPosition && currentSelectorPosition) {
+        context.globalAlpha = 0.5;
+        context.fillStyle = selectorColor;
         var lx = currentSelectorPosition.x - initialSelectorPosition.x
         var ly = currentSelectorPosition.y - initialSelectorPosition.y
         context.fillRect(initialSelectorPosition.x, initialSelectorPosition.y, lx, ly);
@@ -211,20 +217,20 @@ function isPointInRect(ra, rc, p) {
     var x2 = Math.max(ra.x, rc.x);
     var y1 = Math.min(ra.y, rc.y);
     var y2 = Math.max(ra.y, rc.y);
-    return p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2; 
+    return p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2;
 }
 
 function displaySelectedPlanes() {
     selectedPlaneList.innerHTML = '';
-    if(selectedPlanes.length){
-        selectedPlanes.forEach(function(p){
+    if (selectedPlanes.length) {
+        selectedPlanes.forEach(function(p) {
             appendPlane(selectedPlaneList, p);
         })
     }
 }
 
 window.onload = function() {
-    var frame = 1000/60;
+    var frame = 1000 / 60;
     setInterval(draw, frame);
-    setInterval(displaySelectedPlanes, 10000/60)
+    setInterval(displaySelectedPlanes, 10000 / 60)
 }
