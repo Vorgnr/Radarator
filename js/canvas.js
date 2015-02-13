@@ -47,6 +47,7 @@ Plane.prototype.draw = function() {
 var canvas = document.getElementById("radar");
 var planeList = document.getElementById("planeList");
 var context = canvas.getContext("2d");
+var mousePosition = document.getElementById("mousePosition");
 var canvasSize = 1000;
 var min = canvasSize * (-0.95);
 var max = canvasSize * 1.05;
@@ -86,15 +87,15 @@ var drawRadar = function(){
         drawCircle(circleInitialPosition, circleInitialPosition, i * 100);
     };
 
-    context.moveTo(0, 500);
-    context.lineTo(1000, 500);
-    context.moveTo(500, 0);
-    context.lineTo(500, 1000);
+    context.moveTo(0, circleInitialPosition);
+    context.lineTo(canvasSize, circleInitialPosition);
+    context.moveTo(circleInitialPosition, 0);
+    context.lineTo(circleInitialPosition, canvasSize);
     context.stroke();
 }
 
 var drawLine = function(){
-    var center = 500;
+    var center = circleInitialPosition;
     context.lineWidth = 8;
     startAngle += 0.01;
     context.moveTo(center, center);
@@ -130,6 +131,24 @@ var drawCircle = function(x, y, rayon){
     context.closePath();
     context.stroke();
 }
+
+function writeMessage(message) {
+    mousePosition.innerHTML = message
+}
+
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+
+canvas.addEventListener('mousemove', function(evt) {
+  var mousePos = getMousePos(canvas, evt);
+  var message = 'X: ' + Math.round(mousePos.x) + ' Y: ' + Math.round(mousePos.y);
+  writeMessage(message);
+}, false);
 
 window.onload = function(){
     setInterval(draw, 1000/60);
