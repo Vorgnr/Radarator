@@ -56,6 +56,7 @@ canvas.height = canvasSize;
 var circleInitialPosition = 500;
 var planesCount = 35;
 var planes = [];
+var selectedPlanes = [];
 
 var startAngle = Math.PI;
 
@@ -104,11 +105,12 @@ var drawLine = function(){
 }
 
 var drawPlanes = function(){
-    context.fillStyle = "rgb(200, 0, 0)";
     createPlane();
     planes.forEach(function(p, i){
-        if(!p.isOutOfBound)
+        if(!p.isOutOfBound) {
+            context.fillStyle = p.isSelected ? "rgb(50, 0, 0)" : "rgb(200, 0, 0)";
             p.draw();
+        }
         else {
             var planeItem = document.getElementById(p.id);
             planeList.removeChild(planeItem);
@@ -122,6 +124,7 @@ var draw = function() {
     drawRadar();
     drawPlanes();
     drawLine();
+    drawSelector();
 }
  
 var drawCircle = function(x, y, rayon){
@@ -144,11 +147,77 @@ function getMousePos(canvas, evt) {
     };
 }
 
-canvas.addEventListener('mousemove', function(evt) {
-  var mousePos = getMousePos(canvas, evt);
+var initialSelectorPosition = null;
+var currentSelectorPosition = null;
+
+canvas.addEventListener('mousemove', function(e) {
+  var mousePos = getMousePos(canvas, e);
   var message = 'X: ' + Math.round(mousePos.x) + ' Y: ' + Math.round(mousePos.y);
   writeMessage(message);
 }, false);
+
+canvas.addEventListener('mousedown', function(e){
+    initialSelectorPosition = getMousePos(canvas, e);
+    currentSelectorPosition = initialSelectorPosition;
+    canvas.addEventListener('mousemove', setSelector);
+    canvas.addEventListener('mouseup', selectPlane);
+});
+
+function selectPlane(){
+    canvas.removeEventListener('mousemove', setSelector);
+    canvas.removeEventListener('mouseup', selectPlane);
+
+    planes.forEach(function(p, i){
+        p.isSelected = isPointInRect(initialSelectorPosition, currentSelectorPosition, { x: p.x, y: p.y});
+    });
+
+    clearSelector();
+}
+
+function clearSelector(){
+    initialSelectorPosition = null;
+    currentSelectorPosition = null;
+}
+
+function setSelector(e){
+    currentSelectorPosition = getMousePos(canvas, e);
+}
+
+function drawSelector(){
+    if(initialSelectorPosition && currentSelectorPosition){
+        context.globalAlpha=0.5;
+        context.fillStyle = "rgb(200, 0, 0)";
+        var lx = currentSelectorPosition.x - initialSelectorPosition.x
+        var ly = currentSelectorPosition.y - initialSelectorPosition.y
+        context.fillRect(initialSelectorPosition.x, initialSelectorPosition.y, lx, ly);
+        context.globalAlpha= 1;
+    }
+}
+
+function rectArea(a, b, c) {
+    return Math.abs((b.x - a.x) * (c.y - a.y));
+}
+
+function isPointInRect(ra, rc, p) {
+    var minX, maxX, minY, maxY;
+    if(ra.x <= rc.x) {
+        minX = ra.x;
+        maxX = rc.x;
+    } else {
+        minX = rc.x;
+        maxX = ra.x;
+    }
+
+    if(ra.y <= rc.y) {
+        minY = ra.y;
+        maxY = rc.y;
+    } else {
+        minY = rc.y;
+        maxY = ra.y;
+    }
+
+    return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY
+}
 
 window.onload = function(){
     setInterval(draw, 1000/60);
