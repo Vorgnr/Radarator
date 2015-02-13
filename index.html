@@ -9,7 +9,7 @@
         #radar {
             border-radius: 50%;
         }
-        #planeList {
+        .plane-container {
             float: right;
             list-style-type: none;
             color: #fff;
@@ -31,7 +31,8 @@
     <canvas id="radar">
         Votre navigateur ne supporte pas canvas.
     </canvas>
-    <ul id="planeList"></ul>
+    <ul class="plane-container" id="planeList"></ul>
+    <ul class="plane-container" id="selectedPlaneList"></ul>
 </body>
 <script src="js/canvas.js"></script>
 </html>

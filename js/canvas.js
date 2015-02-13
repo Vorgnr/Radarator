@@ -46,6 +46,7 @@ Plane.prototype.draw = function() {
 
 var canvas = document.getElementById("radar");
 var planeList = document.getElementById("planeList");
+var selectedPlaneList = document.getElementById("selectedPlaneList");
 var context = canvas.getContext("2d");
 var mousePosition = document.getElementById("mousePosition");
 var canvasSize = 1000;
@@ -64,20 +65,20 @@ var createPlane = function(){
     while(planes.length < planesCount){
         var p = new Plane();
         planes.push(p);
-        appendPlane(p);
+        appendPlane(planeList, p);
     };
 }
 
-var appendPlane = function(p){
+var appendPlane = function(l, p){
     var planeItem = document.createElement("li");
     var id = document.createElement("b");
     id.appendChild(document.createTextNode(p.id));
     var span = document.createElement("span");
-    span.appendChild(document.createTextNode(p.x + ", " + p.y));
+    span.appendChild(document.createTextNode(Math.round(p.x) + ", " + Math.round(p.y) + " "));
     planeItem.appendChild(id);
     planeItem.appendChild(span);
     planeItem.setAttribute("id", p.id);
-    planeList.appendChild(planeItem);
+    l.appendChild(planeItem);
 }
 
 var drawRadar = function(){
@@ -147,6 +148,12 @@ function getMousePos(canvas, evt) {
     };
 }
 
+function getSelectedPlanes(){
+    return planes.filter(function(p){
+        return p.isSelected;
+    })
+}
+
 var initialSelectorPosition = null;
 var currentSelectorPosition = null;
 
@@ -171,6 +178,7 @@ function selectPlane(){
         p.isSelected = isPointInRect(initialSelectorPosition, currentSelectorPosition, { x: p.x, y: p.y});
     });
 
+    selectedPlanes = getSelectedPlanes();
     clearSelector();
 }
 
@@ -190,7 +198,7 @@ function drawSelector(){
         var lx = currentSelectorPosition.x - initialSelectorPosition.x
         var ly = currentSelectorPosition.y - initialSelectorPosition.y
         context.fillRect(initialSelectorPosition.x, initialSelectorPosition.y, lx, ly);
-        context.globalAlpha= 1;
+        context.globalAlpha = 1;
     }
 }
 
@@ -219,6 +227,17 @@ function isPointInRect(ra, rc, p) {
     return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY
 }
 
+function displaySelectedPlanes(){
+    selectedPlaneList.innerHTML = '';
+    if(selectedPlanes.length){
+        selectedPlanes.forEach(function(p){
+            appendPlane(selectedPlaneList, p);
+        })
+    }
+}
+
 window.onload = function(){
-    setInterval(draw, 1000/60);
+    var frame = 1000/60;
+    setInterval(draw, frame);
+    setInterval(displaySelectedPlanes, frame)
 }
