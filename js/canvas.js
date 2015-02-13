@@ -207,24 +207,11 @@ function rectArea(a, b, c) {
 }
 
 function isPointInRect(ra, rc, p) {
-    var minX, maxX, minY, maxY;
-    if(ra.x <= rc.x) {
-        minX = ra.x;
-        maxX = rc.x;
-    } else {
-        minX = rc.x;
-        maxX = ra.x;
-    }
-
-    if(ra.y <= rc.y) {
-        minY = ra.y;
-        maxY = rc.y;
-    } else {
-        minY = rc.y;
-        maxY = ra.y;
-    }
-
-    return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY
+    var x1 = Math.min(ra.x, rc.x);
+    var x2 = Math.max(ra.x, rc.x);
+    var y1 = Math.min(ra.y, rc.y);
+    var y2 = Math.max(ra.y, rc.y);
+    return p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2; 
 }
 
 function displaySelectedPlanes(){
