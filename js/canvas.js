@@ -3,7 +3,7 @@ var Plane = function(){
         var S4 = function(){
             return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
         }
-        return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+        return S4().toLowerCase();
     }
     this.id = createGuid();
 
@@ -166,13 +166,13 @@ canvas.addEventListener('mousemove', function(e) {
 canvas.addEventListener('mousedown', function(e){
     initialSelectorPosition = getMousePos(canvas, e);
     currentSelectorPosition = initialSelectorPosition;
-    canvas.addEventListener('mousemove', setSelector);
-    canvas.addEventListener('mouseup', selectPlane);
+    document.addEventListener('mousemove', setSelector);
+    document.addEventListener('mouseup', selectPlane);
 });
 
 function selectPlane(){
-    canvas.removeEventListener('mousemove', setSelector);
-    canvas.removeEventListener('mouseup', selectPlane);
+    document.removeEventListener('mousemove', setSelector);
+    document.removeEventListener('mouseup', selectPlane);
 
     planes.forEach(function(p, i){
         p.isSelected = isPointInRect(initialSelectorPosition, currentSelectorPosition, { x: p.x, y: p.y});
@@ -214,7 +214,7 @@ function isPointInRect(ra, rc, p) {
     return p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2; 
 }
 
-function displaySelectedPlanes(){
+function displaySelectedPlanes() {
     selectedPlaneList.innerHTML = '';
     if(selectedPlanes.length){
         selectedPlanes.forEach(function(p){
@@ -223,7 +223,7 @@ function displaySelectedPlanes(){
     }
 }
 
-window.onload = function(){
+window.onload = function() {
     var frame = 1000/60;
     setInterval(draw, frame);
     setInterval(displaySelectedPlanes, 10000/60)
