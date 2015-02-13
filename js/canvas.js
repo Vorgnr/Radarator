@@ -50,12 +50,12 @@ var selectedPlaneList = document.getElementById("selectedPlaneList");
 var context = canvas.getContext("2d");
 var mousePosition = document.getElementById("mousePosition");
 var canvasSize = 1000;
-var min = canvasSize * (-0.95);
+var min = canvasSize * (-0.05);
 var max = canvasSize * 1.05;
 canvas.width = canvasSize;
 canvas.height = canvasSize;
 var circleInitialPosition = 500;
-var planesCount = 35;
+var planesCount = 15;
 var planes = [];
 var selectedPlanes = [];
 
@@ -226,5 +226,5 @@ function displaySelectedPlanes(){
 window.onload = function(){
     var frame = 1000/60;
     setInterval(draw, frame);
-    setInterval(displaySelectedPlanes, frame)
+    setInterval(displaySelectedPlanes, 10000/60)
 }
