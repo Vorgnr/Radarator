@@ -32,13 +32,18 @@ var Plane = function() {
     var maxAngle = 1;
     this.vx = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
     this.vy = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
+    this.passengerCount = Math.round(getRandomBetween(2, 400));
+}
+
+Plane.prototype.isAvailable = function() {
+    return !this.isOutOfBound && !this.isCrashed;
 }
 
 Plane.prototype.draw = function() {
     if (this.x >= min && this.x <= max && this.y >= min && this.y <= max) {
         this.x += this.vx;
         this.y += this.vy;
-        context.fillRect(this.x, this.y, 10, 10);
+        context.fillRect(this.x, this.y, planeSize, planeSize);
     } else {
         this.isOutOfBound = true;
     }
@@ -47,6 +52,8 @@ Plane.prototype.draw = function() {
 var canvas = document.getElementById("radar");
 var planeList = document.getElementById("planeList");
 var selectedPlaneList = document.getElementById("selectedPlaneList");
+var crashedPlaneList = document.getElementById("crashedPlaneList");
+var deadCounterSpan = document.getElementById("deadCounter");
 var context = canvas.getContext("2d");
 var mousePosition = document.getElementById("mousePosition");
 var canvasSize = 1000;
@@ -54,13 +61,16 @@ var min = canvasSize * (-0.05);
 var max = canvasSize * 1.05;
 canvas.width = canvasSize;
 canvas.height = canvasSize;
-var circleInitialPosition = 500;
-var planesCount = 15;
+var circleInitialPosition = canvasSize / 2;
+var planesCount = 25;
+var planeSize = 25;
 var planes = [];
 var selectedPlanes = [];
+var crashedPlanes = [];
 var startAngle = Math.PI;
+var deadCounter = 0;
 
-var radarColor = "rgba(52, 152, 219, 0.8)";
+var radarColor = "rgba(0, 161, 80, 0.8)";
 var selectedPlaneColor = "rgb(50, 0, 0)";
 var planeColor = "rgb(200, 0, 0)";
 var selectorColor = planeColor;
@@ -77,10 +87,15 @@ var appendPlane = function(l, p) {
     var planeItem = document.createElement("li");
     var id = document.createElement("b");
     id.appendChild(document.createTextNode(p.id));
-    var span = document.createElement("span");
-    span.appendChild(document.createTextNode(Math.round(p.x) + ", " + Math.round(p.y) + " "));
+    var spanXY = document.createElement("span");
+    spanXY.appendChild(document.createTextNode(Math.round(p.x) + ", " + Math.round(p.y) + " "));
     planeItem.appendChild(id);
-    planeItem.appendChild(span);
+    planeItem.appendChild(spanXY);
+    if(p.isCrashed) {
+        var spanCrashed = document.createElement("span");
+        spanCrashed.appendChild(document.createTextNode("Crashed"));
+        planeItem.appendChild(spanCrashed);
+    }
     planeItem.setAttribute("id", p.id);
     l.appendChild(planeItem);
 }
@@ -112,9 +127,30 @@ var drawLine = function() {
 var drawPlanes = function() {
     createPlane();
     planes.forEach(function(p, i) {
-        if (!p.isOutOfBound) {
+        if (p.isAvailable()) {
             context.fillStyle = p.isSelected ? selectedPlaneColor : planeColor;
             p.draw();
+            var otherPlanes = getOthersNotCrashedPlanes(p.id);
+            otherPlanes.forEach(function(op) {
+                var isCrashed = isPointInRect({
+                    x: p.x, 
+                    y: p.y
+                }, { 
+                    x: p.x + planeSize, 
+                    y: p.y + planeSize 
+                }, { 
+                    x: op.x, 
+                    y: op.y
+                });
+                if(isCrashed){
+                    p.isCrashed = isCrashed;
+                    op.isCrashed = isCrashed;
+                    deadCounter += p.passengerCount + op.passengerCount;
+                    deadCounterSpan.innerHTML = deadCounter;
+                    appendPlane(crashedPlaneList, op);
+                    appendPlane(crashedPlaneList, p);
+                }
+            });
         } else {
             var planeItem = document.getElementById(p.id);
             planeList.removeChild(planeItem);
@@ -149,6 +185,12 @@ function getMousePos(canvas, evt) {
         x: evt.clientX - rect.left,
         y: evt.clientY - rect.top
     };
+}
+
+function getOthersNotCrashedPlanes(planeId) {
+    return planes.filter(function(p){
+        return p.id !== planeId && !p.isCrashed;
+    });
 }
 
 function getSelectedPlanes() {
@@ -232,5 +274,7 @@ function displaySelectedPlanes() {
 window.onload = function() {
     var frame = 1000 / 60;
     setInterval(draw, frame);
-    setInterval(displaySelectedPlanes, 10000 / 60)
+    setInterval(function(){
+        displaySelectedPlanes();
+    }, 10000 / 60)
 }
