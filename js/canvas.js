@@ -1,3 +1,5 @@
+'use strict';
+
 var Plane = function() {
     var createGuid = function() {
         var S4 = function() {
@@ -6,6 +8,7 @@ var Plane = function() {
         return S4().toLowerCase();
     }
     this.id = createGuid();
+    this.speed = 1;
 
     var plusOrMinus = function() {
         return [-1, 1][Math.random() * 2 | 0];
@@ -14,10 +17,6 @@ var Plane = function() {
     var getStartPosition = function() {
         return [min, max][Math.random() * 2 | 0];
     };
-
-    var getRandomBetween = function(min, max) {
-        return Math.random() * (max - min) + min;
-    }
 
     if (~plusOrMinus()) {
         this.x = getRandomBetween(min, max);
@@ -33,21 +32,48 @@ var Plane = function() {
     this.vx = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
     this.vy = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
     this.passengerCount = Math.round(getRandomBetween(2, 400));
+    this.name = generatePlaneName();
 }
 
 Plane.prototype.isAvailable = function() {
     return !this.isOutOfBound && !this.isCrashed;
-}
+};
 
 Plane.prototype.draw = function() {
     if (this.x >= min && this.x <= max && this.y >= min && this.y <= max) {
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * this.speed;
+        this.y += this.vy * this.speed;
         context.fillRect(this.x, this.y, planeSize, planeSize);
     } else {
         this.isOutOfBound = true;
     }
 };
+
+Plane.prototype.goUp = function(){
+    this.vy = Math.abs(this.vy);
+    this.vy *= -1;
+}
+
+Plane.prototype.goDown = function(){
+    this.vy = Math.abs(this.vy);
+}
+
+Plane.prototype.goLeft = function(){
+    this.vx = Math.abs(this.vx);
+    this.vx *= -1;
+}
+
+Plane.prototype.goRight = function(){
+    this.vx = Math.abs(this.vx);
+}
+
+Plane.prototype.speedUp = function() {
+    this.speed += 0.3;
+}
+
+Plane.prototype.speedDown = function() {
+    this.speed -= 0.3;
+}
 
 var canvas = document.getElementById("radar");
 var planeList = document.getElementById("planeList");
@@ -62,7 +88,7 @@ var max = canvasSize * 1.05;
 canvas.width = canvasSize;
 canvas.height = canvasSize;
 var circleInitialPosition = canvasSize / 2;
-var planesCount = 25;
+var planesCount = 10;
 var planeSize = 25;
 var planes = [];
 var selectedPlanes = [];
@@ -83,17 +109,25 @@ var createPlane = function() {
     };
 }
 
+var getRandomBetween = function(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+Array.prototype.getRandomValue = function() {
+    return this[Math.floor(Math.random() * this.length)];
+}
+
 var appendPlane = function(l, p) {
     var planeItem = document.createElement("li");
     var id = document.createElement("b");
-    id.appendChild(document.createTextNode(p.id));
+    id.appendChild(document.createTextNode(p.name));
     var spanXY = document.createElement("span");
     spanXY.appendChild(document.createTextNode(Math.round(p.x) + ", " + Math.round(p.y) + " "));
     planeItem.appendChild(id);
     planeItem.appendChild(spanXY);
     if(p.isCrashed) {
         var spanCrashed = document.createElement("span");
-        spanCrashed.appendChild(document.createTextNode("Crashed"));
+        spanCrashed.appendChild(document.createTextNode("RIP : " + p.passengerCount));
         planeItem.appendChild(spanCrashed);
     }
     planeItem.setAttribute("id", p.id);
@@ -215,6 +249,36 @@ canvas.addEventListener('mousedown', function(e) {
     document.addEventListener('mouseup', selectPlane);
 });
 
+document.addEventListener('keydown', function(e){
+    if(selectedPlanes.length){
+        changeAllSelectedPlaneDirection(e.keyIdentifier);
+    }
+})
+
+function changeAllSelectedPlaneDirection(d){
+    console.log(d);
+    selectedPlanes.forEach(function(p){
+        if(d === "Up"){
+            p.goUp();
+        }
+        else if(d === "Right"){
+            p.goRight();
+        }
+        else if(d === "Left"){
+            p.goLeft();
+        }
+        else if(d === "Down"){
+            p.goDown();
+        } else if(d === "U+004B") {
+            p.speedUp();
+        } else if(d === "U+004D") {
+            p.speedDown();
+        }
+        else
+            return;
+    });
+}
+
 function selectPlane() {
     document.removeEventListener('mousemove', setSelector);
     document.removeEventListener('mouseup', selectPlane);
@@ -269,6 +333,13 @@ function displaySelectedPlanes() {
             appendPlane(selectedPlaneList, p);
         })
     }
+}
+
+function generatePlaneName(){
+    var countries = ['fr', 'de', 'uk', 'se', 'us', 'sp', 'gr', 'jp', 'ch', 'sw'];
+    var models = ['720', '630', '740', '707', '727', 'A360', 'A350', 'A320'];
+    var brands = ['Boeing', 'AirBus', 'Atr', 'Jet'];
+    return [brands.getRandomValue(), models.getRandomValue(), countries.getRandomValue()].join('-');
 }
 
 window.onload = function() {
