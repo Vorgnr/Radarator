@@ -29,6 +29,7 @@ var Plane = function() {
     this.isOutOfBound = false;
     var minAngle = 0.1;
     var maxAngle = 1;
+    this.isAtAirPort = false;
     this.vx = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
     this.vy = plusOrMinus() * getRandomBetween(minAngle, maxAngle);
     this.passengerCount = Math.round(getRandomBetween(2, 400));
@@ -36,8 +37,54 @@ var Plane = function() {
 }
 
 Plane.prototype.isAvailable = function() {
-    return !this.isOutOfBound && !this.isCrashed;
+    return !this.isOutOfBound && !this.isCrashed && !this.isAtAirPort;
 };
+
+Plane.prototype.isLanded = function() {
+    this.isAtAirPort = isPointInRect({x: airPortInitialposition.x, y: airPortInitialposition.y}, 
+        {x: airPortInitialposition.x + airPortSize, y: airPortInitialposition.y + airPortSize}, 
+        {x: this.x, y: this.y});
+    return this.isAtAirPort;
+}
+
+Plane.prototype.takeOff = function() {
+    this.runway = [1, 2, 3, 4].getRandomValue();
+    console.log(this.runway);
+    var x,y;
+    switch(this.runway) {
+        case 1:
+            //x = airPortInitialposition.x + airPortSize / 2;
+            //y = airPortInitialposition.y;
+            x = 500;
+            y = 400;
+            this.goUp();
+            break;
+        case 2:
+            //x = airPortInitialposition.x + airPortSize;
+            //y = airPortInitialposition.y - airPortSize / 2;
+            x = 600;
+            y = 500;
+            this.goRight();
+            break;
+        case 3:
+            //x = airPortInitialposition.x + airPortSize / 2;
+            //y = airPortInitialposition.y - airPortSize;
+            x = 500;
+            y = 600;
+            this.goDown();
+            break;
+        case 4:
+            //x = airPortInitialposition.x - airPortSize / 2;
+            //y = airPortInitialposition.y;
+            x = 400;
+            y = 500;
+            this.goLeft();
+            break;
+    }
+    this.x = x;
+    this.y = y;
+    this.isAtAirPort = false;
+}
 
 Plane.prototype.draw = function() {
     if (this.x >= min && this.x <= max && this.y >= min && this.y <= max) {
@@ -79,6 +126,7 @@ var canvas = document.getElementById("radar");
 var planeList = document.getElementById("planeList");
 var selectedPlaneList = document.getElementById("selectedPlaneList");
 var crashedPlaneList = document.getElementById("crashedPlaneList");
+var landedPlaneList = document.getElementById("landedPlaneList");
 var deadCounterSpan = document.getElementById("deadCounter");
 var context = canvas.getContext("2d");
 var mousePosition = document.getElementById("mousePosition");
@@ -93,8 +141,13 @@ var planeSize = 25;
 var planes = [];
 var selectedPlanes = [];
 var crashedPlanes = [];
+var landedPlanes = [];
 var startAngle = Math.PI;
 var deadCounter = 0;
+
+var airPortColor = "rgb(37, 14, 248)";
+var airPortInitialposition = { x:450, y: 450};
+var airPortSize = 100;
 
 var radarColor = "rgba(0, 161, 80, 0.8)";
 var selectedPlaneColor = "rgb(50, 0, 0)";
@@ -161,7 +214,14 @@ var drawLine = function() {
 var drawPlanes = function() {
     createPlane();
     planes.forEach(function(p, i) {
-        if (p.isAvailable()) {
+        var t = p.isLanded();
+        if(t) {
+            var alreadyLanded = landedPlanes.filter(function(pl){ return pl.id == p.id});
+            if(!alreadyLanded.length){
+               appendPlane(landedPlaneList, p);
+               landedPlanes.push(p); 
+            }
+        } else if (p.isAvailable()) {
             context.fillStyle = p.isSelected ? selectedPlaneColor : planeColor;
             p.draw();
             var otherPlanes = getOthersNotCrashedPlanes(p.id);
@@ -196,6 +256,7 @@ var drawPlanes = function() {
 var draw = function() {
     context.clearRect(0, 0, canvasSize, canvasSize);
     drawRadar();
+    drawAirPort(airPortInitialposition.x, airPortInitialposition.y, airPortSize, airPortColor)
     drawPlanes();
     drawLine();
     drawSelector();
@@ -206,6 +267,13 @@ var drawCircle = function(x, y, rayon) {
     context.arc(x, y, rayon, 0, Math.PI * 2);
     context.fill();
     context.closePath();
+    context.stroke();
+}
+
+var drawAirPort = function(x, y, size, color) {
+    context.beginPath();
+    context.fillStyle = color;
+    context.fillRect(x, y, size, size);
     context.stroke();
 }
 
@@ -255,8 +323,14 @@ document.addEventListener('keydown', function(e){
     }
 })
 
+landedPlaneList.addEventListener('mouseup', function(e){
+    var plane = landedPlanes.filter(function(p){
+        return p.id == e.target.parentElement.id;
+    });
+    plane[0].takeOff();
+});
+
 function changeAllSelectedPlaneDirection(d){
-    console.log(d);
     selectedPlanes.forEach(function(p){
         if(d === "Up"){
             p.goUp();
@@ -342,10 +416,21 @@ function generatePlaneName(){
     return [brands.getRandomValue(), models.getRandomValue(), countries.getRandomValue()].join('-');
 }
 
+function sendPlanes() {
+    if(landedPlanes.length) {
+        landedPlanes.forEach(function(p, i){
+            p.takeOff();
+            landedPlanes.splice(i, 1);
+            var planeItem = document.getElementById(p.id);
+            landedPlaneList.removeChild(planeItem);
+        });
+    }
+}
+
 window.onload = function() {
     var frame = 1000 / 60;
     setInterval(draw, frame);
     setInterval(function(){
         displaySelectedPlanes();
-    }, 10000 / 60)
+    }, 10000 / 60);
 }
