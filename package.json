@@ -1,0 +1,21 @@
+{
+  "name": "Radarator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server --devtool eval --progress --colors --content-base dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vorgnr/Radarator.git"
+  },
+  "author": "Vorgnr",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Vorgnr/Radarator/issues"
+  },
+  "homepage": "https://github.com/Vorgnr/Radarator",
+  "devDependencies": {}
+}

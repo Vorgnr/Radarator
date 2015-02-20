@@ -328,6 +328,10 @@ landedPlaneList.addEventListener('mouseup', function(e){
         return p.id == e.target.parentElement.id;
     });
     plane[0].takeOff();
+    console.log(e);
+    //landedPlanes.splice(i, 1);
+    var planeItem = document.getElementById(plane.id);
+    landedPlaneList.removeChild(planeItem);
 });
 
 function changeAllSelectedPlaneDirection(d){
